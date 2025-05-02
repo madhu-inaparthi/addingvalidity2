@@ -1,13 +1,169 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Hello Express!</title>
+    <title>Social Media App</title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <h1>Hello Express!</h1>
-    <p>Showing <code>pages/index.html</code></p>
+    <div class="container">
+      <div class="tabs">
+        <button id="login-tab" class="tab active">Login</button>
+        <button id="register-tab" class="tab">Register</button>
+      </div>
+
+      <!-- Login Form -->
+      <div id="login-form-container" class="form-container active">
+        <h1>Login to Your Account</h1>
+        <div class="login-form">
+          <div class="form-group">
+            <label for="login-email">Email:</label>
+            <input type="email" id="login-email" name="email" placeholder="Enter your email" required>
+          </div>
+          <div class="form-group">
+            <label for="login-password">Password:</label>
+            <input type="password" id="login-password" name="password" placeholder="Enter your password" required>
+          </div>
+          <button id="login-btn">Login</button>
+          <div id="login-message" class="message"></div>
+        </div>
+      </div>
+
+      <!-- Register Form -->
+      <div id="register-form-container" class="form-container">
+        <h1>Create an Account</h1>
+        <div class="register-form">
+          <div class="form-group">
+            <label for="register-email">Email:</label>
+            <input type="email" id="register-email" name="email" placeholder="Enter your email" required>
+          </div>
+          <div class="form-group">
+            <label for="register-password">Password:</label>
+            <input type="password" id="register-password" name="password" placeholder="Enter your password" required>
+          </div>
+          <div class="form-group">
+            <label for="register-confirm-password">Confirm Password:</label>
+            <input type="password" id="register-confirm-password" name="confirm-password" placeholder="Confirm your password" required>
+          </div>
+          <button id="register-btn">Register</button>
+          <div id="register-message" class="message"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const loginTab = document.getElementById('login-tab');
+        const registerTab = document.getElementById('register-tab');
+        const loginFormContainer = document.getElementById('login-form-container');
+        const registerFormContainer = document.getElementById('register-form-container');
+
+        loginTab.addEventListener('click', function() {
+          loginTab.classList.add('active');
+          registerTab.classList.remove('active');
+          loginFormContainer.classList.add('active');
+          registerFormContainer.classList.remove('active');
+        });
+
+        registerTab.addEventListener('click', function() {
+          registerTab.classList.add('active');
+          loginTab.classList.remove('active');
+          registerFormContainer.classList.add('active');
+          loginFormContainer.classList.remove('active');
+        });
+
+        const loginBtn = document.getElementById('login-btn');
+        const loginMessageDiv = document.getElementById('login-message');
+
+        loginBtn.addEventListener('click', async function() {
+          const email = document.getElementById('login-email').value;
+          const password = document.getElementById('login-password').value;
+
+          if (!email || !password) {
+            loginMessageDiv.textContent = 'Email and password are required';
+            loginMessageDiv.className = 'message error';
+            return;
+          }
+
+          try {
+            const response = await fetch('/api/login', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ email, password })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+              loginMessageDiv.textContent = data.message;
+              loginMessageDiv.className = 'message success';
+            } else {
+              loginMessageDiv.textContent = data.message;
+              loginMessageDiv.className = 'message error';
+            }
+          } catch (error) {
+            loginMessageDiv.textContent = 'An error occurred. Please try again.';
+            loginMessageDiv.className = 'message error';
+            console.error('Error:', error);
+          }
+        });
+
+        const registerBtn = document.getElementById('register-btn');
+        const registerMessageDiv = document.getElementById('register-message');
+
+        registerBtn.addEventListener('click', async function() {
+          const email = document.getElementById('register-email').value;
+          const password = document.getElementById('register-password').value;
+          const confirmPassword = document.getElementById('register-confirm-password').value;
+
+          if (!email || !password || !confirmPassword) {
+            registerMessageDiv.textContent = 'All fields are required';
+            registerMessageDiv.className = 'message error';
+            return;
+          }
+
+          if (password !== confirmPassword) {
+            registerMessageDiv.textContent = 'Passwords do not match';
+            registerMessageDiv.className = 'message error';
+            return;
+          }
+
+          try {
+            const response = await fetch('/api/register', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ email, password })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+              registerMessageDiv.textContent = data.message;
+              registerMessageDiv.className = 'message success';
+
+              document.getElementById('register-email').value = '';
+              document.getElementById('register-password').value = '';
+              document.getElementById('register-confirm-password').value = '';
+
+              setTimeout(() => {
+                loginTab.click();
+              }, 2000);
+            } else {
+              registerMessageDiv.textContent = data.message;
+              registerMessageDiv.className = 'message error';
+            }
+          } catch (error) {
+            registerMessageDiv.textContent = 'An error occurred. Please try again.';
+            registerMessageDiv.className = 'message error';
+            console.error('Error:', error);
+          }
+        });
+      });
+    </script>
   </body>
 </html>
